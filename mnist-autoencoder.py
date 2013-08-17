@@ -10,6 +10,7 @@ import os
 import tempfile
 import theanets
 import urllib
+from sklearn.linear_model import SGDClassifier
 
 lmj.cli.enable_default_logging()
 
@@ -24,23 +25,19 @@ if not os.path.isfile(DATASET):
 train, valid, _ = [x for x, _ in cPickle.load(gzip.open(DATASET))]
 
 e = theanets.Experiment(theanets.Autoencoder,
-                        layers=(784, 250, 784),
+                        layers=(784, 150, 784),
                         tied_weights=True,
                         optimize="sgd",
                         )
 e.run(train, valid)
 e.save("auto.pkl")
 
-pred = e.network(valid)
-for i in np.random.randint(pred.shape[0], size=5):
-    dim = int(np.sqrt(pred.shape[1]))
-    fig, axarr = plt.subplots(1,2)
-    axarr[0].set_title("Original")
-    axarr[0].xaxis.set_visible(False)
-    axarr[0].yaxis.set_visible(False)
-    axarr[0].imshow(valid[i,:].reshape((dim,dim)), cmap="gray")
-    axarr[1].set_title("Reconstructed")
-    axarr[1].xaxis.set_visible(False)
-    axarr[1].yaxis.set_visible(False)
-    axarr[1].imshow(pred[i,:].reshape((dim,dim)), cmap="gray")
-plt.show()
+encoded_train = e.network.forward(train)[-2]
+encoded_valid = e.network.forward(valid)[-2]
+train, valid, _ = [
+    (x, y.astype('int32')) for x, y in cPickle.load(gzip.open(DATASET))]
+clf = SGDClassifier()
+clf.fit(*train)
+print "Score on raw features:",clf.score(*valid)
+clf.fit(encoded_train, train[-1])
+print "Score on encoded features:",clf.score(encoded_valid, valid[-1])
