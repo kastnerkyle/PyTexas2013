@@ -17,8 +17,7 @@ Interpreting log output
 
 Theanets will output logs as it trains - interpreting this can be tricky.
 
-For example, take the output line below
-MainProcess theanets.trainer:76 SGD update 59/128 @1.33e-03 train [ 3.95852201  3.95852201  0.        ]
+For example, take the output line - MainProcess theanets.trainer:76 SGD update 59/128 @1.33e-03 train [ 3.95852201  3.95852201  0.        ]
 
 The line above shows the network is on update 59 out of 128 total sweeps through the data (called epochs).
 The number after the @ sign shows the current value of the learning rate, which is set to decay over epochs by default
@@ -44,7 +43,7 @@ Using a trained network
 
 Assuming there are training and valid datasets (train, valid), a network can 
 be created and trained in the following way.
-
+``````python
 #Create an autoencoder
 e = theanets.Experiment(theanets.Autoencoder,                                   
                         layers=(784, 150, 784),                                 
@@ -60,3 +59,4 @@ e.run(train, valid)
 #Therefore, we can access the code layer results (150) with either [1] or [-2]                 
 encoded_train = e.network.forward(train)[-2]                                    
 encoded_valid = e.network.forward(valid)[-2]                                    
+``````
